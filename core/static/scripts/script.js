@@ -6,6 +6,11 @@ const userComment = document.getElementById("user-comment");
 const sendData = document.getElementById("send-data");
 const serverResponse = document.getElementById("server-response");
 const usersComments = document.getElementById("users-comments");
+const csrftoken = getCookie('csrftoken');
+
+function getCookie(name) {
+  return document.cookie.split('; ').find(row => row.startsWith(name + '='))?.split('=')[1];
+}
 
 function UserCommentAdd(username, comment, element) {
   username = basicSanitation(username);
@@ -44,11 +49,10 @@ sendData.addEventListener("click", async (event) => {
   userDataValues.append("comment", userCommentValue);
 
   try {
-      // const response = await fetch("http://192.168.0.9:8001/server_api/scripts/endpointAPI", {
-      // const response = await fetch("http://127.0.0.1:8001/server_api/scripts/endpointAPI", {
-      const response = await fetch("/SQLIPwn/scripts/api/add_comment", {
+      const response = await fetch("/sqlipwn/scripts/api/add_comment", {
         method: "POST",
         headers: {
+          "X-CSRFToken": csrftoken,
           "Content-Type": "application/x-www-form-urlencoded"
         },
         body: userDataValues.toString()
@@ -71,14 +75,12 @@ sendData.addEventListener("click", async (event) => {
 
 async function loadComments() {
   try {
-    //const response = await fetch("http://192.168.0.9:8001/server_api/scripts/list_comments");
-    const response = await fetch("/SQLIPwn/scripts/api/list_comments")
+    const response = await fetch("/sqlipwn/scripts/api/list_comments")
     const data = await response.json();
     if (data.status !== "success") {
        console.log(response, data);
        return
     }
-
     usersComments.innerHTML = "";
     data.message.forEach(comment_username => {
       UserCommentAdd(comment_username.username, comment_username.comment, usersComments);
